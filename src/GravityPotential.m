@@ -8,11 +8,11 @@ classdef GravityPotential < StateFunction
     methods
         function gp = GravityPotential(varargin)
             gp@StateFunction(varargin{:});
-            gp = gp.dependsOn('Density', 'PVTPropertyFunctions');
+            % gp = gp.dependsOn('Density', 'PVTPropertyFunctions');
             if gp.saturationWeighting
                 gp = gp.dependsOn('s', 'state');
             end
-            gp.label = 'g \rho_\alpha z';
+            gp.label = 'g z';
         end
         function gRhoXYZ = evaluateOnDomain(prop, model, state)
             act = model.getActivePhases();
@@ -28,19 +28,20 @@ classdef GravityPotential < StateFunction
                 g = model.getGravityVector();
                 gxyz = model.G.cells.centroids * g';
 
-                nm = model.getPhaseNames();
-                rho = prop.getEvaluatedExternals(model, state, 'Density');
-                rho = expandMatrixToCell(rho);
+                % nm = model.getPhaseNames();
+                % rho = prop.getEvaluatedExternals(model, state, 'Density');
+                % rho = expandMatrixToCell(rho);
                 for i = 1:nph
                     % Aner ikke om dette blir riktig, har bare fjernet
                     % faceavg-funksjonen
-                    if prop.saturationWeighting
-                        s = model.getProp(state, ['s', nm(i)]);
-                        rhoph = s.*rho{i}./max(s, 1e-8);
-                    else
-                        rhoph = rho{i};
-                    end
-                    gRhoXYZ{i} = -rhoph.*gxyz; %negative sign
+                    % if prop.saturationWeighting
+                    %     s = model.getProp(state, ['s', nm(i)]);
+                    %     rhoph = s.*rho{i}./max(s, 1e-8);
+                    % else
+                    %     rhoph = rho{i};
+                    % end
+                    % gRhoXYZ{i} = -rhoph.*gxyz; %negative sign
+                    gRhoXYZ{i} = gxyz; %removed rho, changed sign
                 end
             else
                 [gRhoXYZ{:}] = deal(zeros(nf, 1));

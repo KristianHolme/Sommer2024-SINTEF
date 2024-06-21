@@ -10,6 +10,7 @@ classdef CombinedPhasePotentialDifference < StateFunction
             gp@StateFunction(model, varargin{:});
             gp = gp.dependsOn('PhasePressures', 'PVTPropertyFunctions');
             gp = gp.dependsOn('pressure', 'state');
+            gp = gp.dependsOn('Density', 'PVTPropertyFunctions');
             gp.hasGravity = norm(model.getGravityVector(), inf) > 0;
             if gp.hasGravity
                 gp = gp.dependsOn('GravityPotential');
@@ -19,6 +20,14 @@ classdef CombinedPhasePotentialDifference < StateFunction
         function v = evaluateOnDomain(prop, model, state)
             act = model.getActivePhases();
             nph = sum(act);
+
+            rho = prop.getEvaluatedExternals(model, state, 'Density');
+            rho = expandMatrixToCell(rho);
+            avg = model.operators.faceAvg;
+            rhof = cell(1, nph);
+            for i = 1:nph
+                rhof{i} = avg(rho{i});
+            end
             
             potential = cell(1, nph);
             if model.FlowPropertyFunctions.CapillaryPressure.pcPresent(model)
@@ -34,6 +43,11 @@ classdef CombinedPhasePotentialDifference < StateFunction
                     pressurePotential{i} = p;
                 end
             end
+            %divide by rho
+            for i = 1:nph
+                pressurePotential{i} = pressurePotential{i} ./ rho{i};
+            end
+
             if prop.hasGravity
                 rhogz = prop.getEvaluatedDependencies(state, 'GravityPotential');
                 for i = 1:nph
@@ -42,22 +56,23 @@ classdef CombinedPhasePotentialDifference < StateFunction
             else
                 potential = pressurePotential;
             end
+
             v = cell(1, nph);
             for i = 1:nph
                 if min(potential{i})<0
                     warning("negative phase potential!");
                 end
-                v{i} = prop.grad(potential{i});
+                v{i} = rhof{i} .* prop.grad(potential{i});
             end
             %testing
-            rhogdz = model.getProp(state, 'GravityPotentialDifference');
-            dp = model.getProp(state, 'PressureGradient');
-            for i = 1:numel(dp)
-                ppd_org{i} = dp{i} + rhogdz{i};
-                ppd_sep_diff{i} = prop.grad(pressurePotential{i}) + prop.grad(rhogz{i}) - v{i};
-                gpdiff{i} = prop.grad(rhogz{i}) - rhogdz{i};
-                dpdiff{i} = prop.grad(pressurePotential{i}) - dp{i};
-            end
+            % rhogdz = model.getProp(state, 'GravityPotentialDifference');
+            % dp = model.getProp(state, 'PressureGradient');
+            % for i = 1:numel(dp)
+            %     ppd_org{i} = dp{i} + rhogdz{i};
+            %     ppd_sep_diff{i} = prop.grad(pressurePotential{i}) + prop.grad(rhogz{i}) - v{i};
+            %     gpdiff{i} = prop.grad(rhogz{i}) - rhogdz{i};
+            %     dpdiff{i} = prop.grad(pressurePotential{i}) - dp{i};
+            % end
         end
     end
 end
