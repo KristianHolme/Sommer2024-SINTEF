@@ -44,20 +44,20 @@ classdef CombinedPhasePotentialDifference < StateFunction
             end
             v = cell(1, nph);
             for i = 1:nph
-                if min(potential{i})<0
-                    warning("negative phase potential!");
-                end
+                % if min(potential{i})<0
+                %     warning("negative phase potential!");
+                % end
                 v{i} = prop.grad(potential{i});
             end
             %testing
-            rhogdz = model.getProp(state, 'GravityPotentialDifference');
-            dp = model.getProp(state, 'PressureGradient');
-            for i = 1:numel(dp)
-                ppd_org{i} = dp{i} + rhogdz{i};
-                ppd_sep_diff{i} = prop.grad(pressurePotential{i}) + prop.grad(rhogz{i}) - v{i};
-                gpdiff{i} = prop.grad(rhogz{i}) - rhogdz{i};
-                dpdiff{i} = prop.grad(pressurePotential{i}) - dp{i};
-            end
+            % rhogdz = model.getProp(state, 'GravityPotentialDifference');
+            % dp = model.getProp(state, 'PressureGradient');
+            % for i = 1:numel(dp)
+            %     ppd_org{i} = dp{i} + rhogdz{i};
+            %     ppd_sep_diff{i} = prop.grad(pressurePotential{i}) + prop.grad(rhogz{i}) - v{i};
+            %     gpdiff{i} = prop.grad(rhogz{i}) - rhogdz{i};
+            %     dpdiff{i} = prop.grad(pressurePotential{i}) - dp{i};
+            % end
         end
     end
 end
