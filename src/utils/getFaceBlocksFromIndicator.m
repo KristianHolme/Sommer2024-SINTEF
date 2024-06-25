@@ -7,7 +7,7 @@ opt = struct('faceError', [], ...
 opt = merge_options(opt, varargin{:});
 
 
-if ~isempty(opt.Faceerror)
+if ~isempty(opt.faceError)
     tol = 1e-20; %ok?
     faceBlocks = cell(1,2);
 
@@ -24,7 +24,7 @@ elseif ~isempty(opt.cellError)
     cellBlocks{2} = find(highErrorCells);
     cellBlocks{1}= setdiff(1:G.cells.num, cellBlocks{2});
 
-    faceBlocks = faceBlocksFromCellBlocks(cellBlocks);
+    faceBlocks = faceBlocksFromCellBlocks(G, cellBlocks);
 else
     %compute error
     tables = setupTables(G);
