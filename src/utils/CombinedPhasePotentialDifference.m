@@ -44,9 +44,9 @@ classdef CombinedPhasePotentialDifference < StateFunction
             end
             v = cell(1, nph);
             for i = 1:nph
-                if min(potential{i})<0
-                    warning("negative phase potential!");
-                end
+                % if min(potential{i})<0
+                %     warning("negative phase potential!");
+                % end
                 v{i} = prop.grad(potential{i});
             end
             %testing
