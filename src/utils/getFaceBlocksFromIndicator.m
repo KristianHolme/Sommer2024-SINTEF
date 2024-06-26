@@ -1,4 +1,4 @@
-function faceBlocks = getFaceBlocksFromIndicator(G, varargin)
+function [faceBlocks, cellBlocks] = getFaceBlocksFromIndicator(G, varargin)
 % uses the static K-orthogonality error indicator to determine which faces
 % has the highest error. Made for use in hybrid discretizations.
 opt = struct('faceError', [], ...
@@ -6,7 +6,7 @@ opt = struct('faceError', [], ...
     'rock', []);
 opt = merge_options(opt, varargin{:});
 
-
+cellBlocks = cell(1,2);
 if ~isempty(opt.faceError)
     tol = 1e-20; %ok?
     faceBlocks = cell(1,2);
@@ -17,7 +17,7 @@ if ~isempty(opt.faceError)
     faceBlocks{1} = setdiff(1:G.faces.num, faceBlocks{2});% tpfa faces
 elseif ~isempty(opt.cellError)
     tol = 1e-18; %ok?
-    cellBlocks = cell(1,2);
+    
 
     highErrorCells = opt.cellError > tol;
 
