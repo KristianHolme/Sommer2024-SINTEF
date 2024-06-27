@@ -13,7 +13,7 @@ clear all
 mrstModule add ad-core mpfa ad-blackoil compositional ad-props mrst-gui nfvm sommer2024
 
 
-gridname = 'cart';
+gridname = 'skewtwist-simplices';
 
 aspect_ratio = 4; %standard is 4
 scaling = 1;
@@ -114,6 +114,7 @@ ratio = [];
 
 try
     model_ntpfa = setNTPFADiscretization(model, 'myRatio', ratio);
+    model_ntpfa.minimumPressure = 0;
     [wsNTPFA, statesNTPFA] = simulateScheduleAD(state0, model_ntpfa, schedule);
 catch msg
     disp("NTPFA failed");

@@ -1,4 +1,7 @@
 function model = setCombinedPhasePotentialDifference(model)
+if isempty(model.FlowDiscretization)
+    model = model.setupStateFunctionGroupings();
+end
 fd = model.FlowDiscretization;
 fd = fd.setStateFunction('GravityPotential', GravityPotential(model));
 ppd = CombinedPhasePotentialDifference(model);
