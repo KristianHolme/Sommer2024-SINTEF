@@ -13,6 +13,7 @@ classdef CombinedPhasePotentialDifference < StateFunction
             gp.hasGravity = norm(model.getGravityVector(), inf) > 0;
             if gp.hasGravity
                 gp = gp.dependsOn('GravityPotential');
+                gp = gp.dependsOn('DensityPotentialDifference');
             end
             gp.label = '\Theta_\alpha';
         end
@@ -39,6 +40,7 @@ classdef CombinedPhasePotentialDifference < StateFunction
                 for i = 1:nph
                     potential{i} = pressurePotential{i} + rhogz{i};
                 end
+                drho_gz = prop.getEvaluatedDependencies(state, 'DensityPotentialDifference');
             else
                 potential = pressurePotential;
             end
@@ -48,6 +50,9 @@ classdef CombinedPhasePotentialDifference < StateFunction
                 %     warning("negative phase potential!");
                 % end
                 v{i} = prop.grad(potential{i});
+                if prop.hasGravity
+                    v{i} = v{i} - drho_gz{i};
+                end
             end
             %testing
             % rhogdz = model.getProp(state, 'GravityPotentialDifference');

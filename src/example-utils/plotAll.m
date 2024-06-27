@@ -26,7 +26,7 @@ h.Layout.Tile = 'east'; % Position the colorbar on the east side
 
 savename = replace(statename, ' ', '_');
 savename = replace(savename, ',', '_');
-savepath = fullfile("plots/",casename, [savename, '.png']);
+savepath = fullfile("plots/threeWellTest",casename, [savename, '.png']);
 [savedir, ~] = fileparts(savepath);
 if ~exist(savedir, 'dir')
     % If it does not exist, create it
