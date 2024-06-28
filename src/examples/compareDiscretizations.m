@@ -15,8 +15,8 @@ mrstModule add ad-core mpfa ad-blackoil compositional ad-props mrst-gui nfvm som
 
 gridname = 'skewtwist-simplices';
 
-aspect_ratio = 4; %standard is 4
-scaling = 1;
+aspect_ratio = 4000; %standard is 4
+scaling = 2;
 shift = 0;
 G = getGrid(gridname, 'aspect_ratio', aspect_ratio, 'scaling', scaling, 'shift', shift);
 
@@ -128,6 +128,7 @@ catch msg
 end
 %% Plot all states together
 methods = {'TPFA', 'MPFA', 'avgMPFA', 'NTPFA'};
+plotContour = ~contains(gridname, 'simplices') && ~contains(gridname, 'tri');
 saturations = {statesTPFA{end}.s(:,1), statesMPFA{end}.s(:,1), statesAvgMPFA{end}.s(:,1), statesNTPFA{end}.s(:,1)};
 plotAll(G, saturations, methods, 'End saturation', casename);
 
@@ -135,16 +136,17 @@ saturations = {statesTPFA{1}.s(:,1), statesMPFA{1}.s(:,1), statesAvgMPFA{1}.s(:,
 plotAll(G, saturations, methods, 'Start saturation', casename);
 
 pressures = {statesTPFA{1}.pressure, statesMPFA{1}.pressure, statesAvgMPFA{1}.pressure, statesNTPFA{1}.pressure};
-plotAll(G, pressures, methods, 'Start pressure', casename);
+plotAll(G, pressures, methods, 'Start pressure', casename, 'plotContour', plotContour);
 
 pressures = {statesTPFA{end}.pressure, statesMPFA{end}.pressure, statesAvgMPFA{end}.pressure, statesNTPFA{end}.pressure};
-plotAll(G, pressures, methods, 'End pressure', casename);
+plotAll(G, pressures, methods, 'End pressure', casename, 'plotContour', plotContour);
 return
 %% Plot Individuals toolbars
-plotFinalPressure(G, statesTPFA, 'TPFA');
-plotFinalPressure(G, statesAvgMPFA, 'AvgMPFA');
-plotFinalPressure(G, statesNTPFA, 'NTPFA');
-plotFinalPressure(G, statesMPFA, 'MPFA');
+plotContour = true;
+plotFinalPressure(G, statesTPFA, 'TPFA', 'plotContour', plotContour);
+plotFinalPressure(G, statesAvgMPFA, 'AvgMPFA', 'plotContour', plotContour);
+plotFinalPressure(G, statesNTPFA, 'NTPFA', 'plotContour', plotContour);
+plotFinalPressure(G, statesMPFA, 'MPFA', 'plotContour', plotContour);
 %% Copyright Notice
 %
 % <html>

@@ -1,5 +1,6 @@
 function plotAll(G, states, methods, statename, casename, varargin)
-opt = struct();
+opt = struct('plotContour', false);
+opt = merge_options(opt, varargin{:});
 figure;
 T = tiledlayout(2,2);
 
@@ -12,9 +13,17 @@ end
 %plot states
 for i = 1:numel(states)
     nexttile(i);
-    plotCellData(G, states{i});
+    plotCellData(G, states{i}, 'edgealpha', double(~opt.plotContour));
     clim([minval, maxval]); % Set color limits for consistency
     axis tight;
+    if opt.plotContour
+        hold on;
+        contour(reshape(G.cells.centroids(:, 1), G.cartDims), ...
+                reshape(G.cells.centroids(:, 2), G.cartDims), ...
+                reshape(states{i}, G.cartDims), ...
+                'linewidth', 1, 'color', 'k');
+        hold off;
+    end
     title(methods{i});
 end
 
