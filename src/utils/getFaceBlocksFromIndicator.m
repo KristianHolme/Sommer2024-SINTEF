@@ -3,7 +3,8 @@ function [faceBlocks, cellBlocks] = getFaceBlocksFromIndicator(G, varargin)
 % has the highest error. Made for use in hybrid discretizations.
 opt = struct('faceError', [], ...
     'cellError', [], ...
-    'rock', []);
+    'rock', [], ...
+    'percentConsistent', 0);
 opt = merge_options(opt, varargin{:});
 
 cellBlocks = cell(1,2);
@@ -17,11 +18,14 @@ if ~isempty(opt.faceError)
     faceBlocks{1} = setdiff(1:G.faces.num, faceBlocks{2});% tpfa faces
 elseif ~isempty(opt.cellError)
     tol = 1e-18; %ok?
-    
-
     highErrorCells = opt.cellError > tol;
 
-    cellBlocks{2} = find(highErrorCells);
+    if opt.percentConsistent ~= 0
+        tol = prctile(opt.cellError(highErrorCells), 100 - opt.percentConsistent);
+        highErrorCells = opt.cellError > tol;
+    end
+
+    cellBlocks{2} = find(highErrorCells);histo
     cellBlocks{1}= setdiff(1:G.cells.num, cellBlocks{2});
 
     faceBlocks = faceBlocksFromCellBlocks(G, cellBlocks);

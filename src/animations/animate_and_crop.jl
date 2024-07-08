@@ -22,7 +22,7 @@ function crop_video(path;num_steps=301,
     frame = video[num_steps]
     # Define cropping parameters
     ny, nx = size(frame)
-    if SPEcase == 'B'
+    if SPEcase == 'B' || SPEcase == 'A'
         x, y = 110, 200  # Top left corner of the crop
         x2, y2 = 110, 220
     elseif SPEcase == 'C'

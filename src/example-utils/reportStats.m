@@ -46,16 +46,30 @@ if isa(reports{1}, 'ResultHandler')
     reports = new_reports;
 end
 
+if max(reports{1}.ReservoirTime) > 10*year
+    xscaling = year;
+    unit = 'y';
+elseif max(reports{1}.ReservoirTime) > 10*day
+    xscaling = day;
+    unit = 'd';
+elseif max(reports{1}.ReservoirTime) >10*hour
+    xscaling = hour;
+    unit = 'h';
+else
+    xscaling = 1;
+    unit = 's';
+end
+
 if opt.plottime
-    figure();
+    figure('name', opt.title);
     for irep = 1:num_reports
         report = reports{irep};
-        plot(report.ReservoirTime, cumsum(report.SimulationTime));hold on;
+        plot(report.ReservoirTime ./ xscaling, cumsum(report.SimulationTime));hold on;
     end
-    xlabel("Reservoir Time (s)");
+    xlabel(sprintf('Reservoir Time (%s)', unit));
     ylabel("Simulation Time (s)");
     legend(names, Location="best");
-    title(opt.title);
+    % title(opt.title);
     grid;
     hold off;
     tightfig;
@@ -78,15 +92,15 @@ end
 % 
 % end
 if opt.nonlinearComparison
-    figure();
+    figure('Name',opt.title);
     for irep = 1:num_reports
         report = reports{irep};
-        plot(report.ReservoirTime, cumsum(report.Iterations));hold on;
+        plot(report.ReservoirTime ./xscaling, cumsum(report.Iterations));hold on;
     end
-    xlabel("Reservoir Time (s)");
+    xlabel(sprintf('Reservoir Time (%s)', unit));
     ylabel("Nonlinear iterations");
     legend(names, Location="best");
-    title(opt.title);
+    % title(opt.title);
     grid;
     hold off;
     tightfig;

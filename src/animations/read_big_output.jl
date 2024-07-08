@@ -1,5 +1,6 @@
 function read_big_output(pth;field=:Rs, parts=3)
     indices = Jutul.valid_restart_indices(pth)
+    @info "reading $(indices[end]) states in $parts parts"
     states = Vector{Dict{Symbol, Any}}(undef, length(indices))
     section_size = Int(floor(length(indices)/parts))
     section_indices = [1; collect(1:parts-1); length(indices)]
