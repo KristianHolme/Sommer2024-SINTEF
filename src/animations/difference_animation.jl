@@ -2,14 +2,16 @@ using JutulDarcy, Jutul, GLMakie
 using ProgressMeter
 using VideoIO, ImageTransformations
 include("read_mrst_output.jl")
+include("animate_and_crop.jl")
+include("read_big_output.jl")
 
-# output_folder = "/media/kristian/HDD/matlab/output/"
-output_folder = "/home/kristian/matlab/output/"
+output_folder = "/media/kristian/HDD/matlab/output/"
+# output_folder = "/home/kristian/matlab/output/"
 
-# folder_path = output_folder*"B_deck=B_ISO_C_grid=cPEBI_2640x380"
+folder_path = output_folder*"B_deck=B_ISO_C_grid=cPEBI_2640x380"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=struct819x117"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=cPEBI_819x117"
-folder_path = output_folder*"B_deck=B_ISO_C_grid=horz_ndg_cut_PG_130x62"
+# folder_path = output_folder*"B_deck=B_ISO_C_grid=horz_ndg_cut_PG_819x117"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=cart_ndg_cut_PG_819x117"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=gq_pb0.19"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=5tetRef0.31"
@@ -27,17 +29,20 @@ folder_path_2 = folder_path*"_pdisc="*method
 
 SPEcase = basename(folder_path)[1]
 output_path = folder_path*"_output"
-## Simulation
+## Mock Simulation
 case = setup_case_from_mrst(folder_path*".mat");
-reservoir_states, _ = read_results(output_path, read_reports=false);
-for i in eachindex(reservoir_states)
-    reservoir_states[i] = reservoir_states[i][:Reservoir]
-end
+model = case[1].model;
+reservoir_states = read_big_output(output_path)
+# reservoir_states, _ = read_results(output_path, read_reports=false);
+# for i in eachindex(reservoir_states)
+#     reservoir_states[i] = reservoir_states[i][:Reservoir]
+# end
 
 reservoir_states_1 = readMRSTOutput(folder_path*"/multiphase")
 reservoir_states_2 = readMRSTOutput(folder_path_2*"/multiphase")
 
 num_states = length(reservoir_states_1)
+# Calculate difference between states
 difference = Vector{Dict{Symbol, Any}}(undef, num_states)
 num_cells = model[:Reservoir].data_domain.representation.nc
 
@@ -45,14 +50,42 @@ for i in eachindex(reservoir_states_1)
     difference[i] = Dict(:Rs=> Vector{Float64}(undef, num_cells))
     difference[i][:Rs] =  vec(reservoir_states_1[i] - reservoir_states_2[i])
 end
-model = case[1].model;
+# Format states for Plotting
+states1 = Vector{Dict{Symbol, Any}}(undef, num_states)
+states2 = Vector{Dict{Symbol, Any}}(undef, num_states)
+for i in eachindex(reservoir_states_1)
+    states1[i] = Dict(:Rs=> Vector{Float64}(undef, num_cells))
+    states2[i] = Dict(:Rs=> Vector{Float64}(undef, num_cells))
 
+    states1[i][:Rs] =  vec(reservoir_states_1[i])
+    states2[i][:Rs] =  vec(reservoir_states_2[i])
+end
 ## Plotting
-fig = plot_reservoir(model[:Reservoir], difference)
+plot_facies = true
+# edge_color= :Grey
+edge_color = nothing
+chosen_states = reservoir_states;
+name = "B_cPEBI-F3"
+set_theme!(backgroundcolor = :grey)
+fig = plot_reservoir(model[:Reservoir], chosen_states; 
+                    shading= NoShading, 
+                    edge_color = edge_color)
+if plot_facies
+    matdata = MAT.matread(folder_path*".mat")
+    G_cells_tag = matdata["G"]["cells"]["tag"]
+    ax = fig.current_axis[]
+    plot_cell_data!(ax, model[:Reservoir].data_domain, G_cells_tag, transparency = false, alpha = 0.1, colormap = :gray1)
+end
+ax = fig.current_axis.x
+hidespines!(ax)
+hidedecorations!(ax)
 if SPEcase == 'B'
     fig.content[18].i_selected = 2 #set scale to all steps, row
     fig.content[20].i_selected = 2 #set camera to xz
     # fig.content[1].i_selected = 3 # set variable to rs
+    if occursin("diff", name)
+        fig.content[16].i_selected = 2 #set balance colortheme
+    end
 elseif SPEcase == 'C'
     fig.content[18].i_selected = 2 #set scale to all steps, row
     fig.current_axis.x.azimuth.val = -2.21
@@ -61,50 +94,16 @@ elseif SPEcase == 'C'
     fig.content[1].i_selected = 3 # set variable to rs
 end
 
+anim_path = animate(fig;animation_name=name)
+crop_video(anim_path; SPEcase = 'B')
 
-
-num_steps = num_states
-framerate = 24
-
-## Animation
-animation_name = basename(folder_path)
-folder = "videos"
-fullpath = joinpath(pwd(), folder, animation_name*".mp4")
-px_per_unit = 2
-compression = 1
-
-p = Progress(num_steps, desc="Recording animation...");
-record(fig.content[5].scene, fullpath, 1:num_steps; framerate = framerate, px_per_unit=px_per_unit, compression = compression) do i
-    fig.content[3].selected_index = i
-    next!(p)
-end
-
-## Crop animation
-
-video = VideoIO.load(fullpath);
-frame = video[301]
-# Define cropping parameters
-ny, nx = size(frame)
-if SPEcase == 'B'
-    x, y = 110, 200  # Top left corner of the crop
-    x2, y2 = 110, 220
-elseif SPEcase == 'C'
-    x, y = 110, 200  # Top left corner of the crop
-    x2, y2 = 100, 200
-end
-x, x2 = x/1600*nx, x2/1600*nx
-y, y2 = y/900*ny, y2/900*ny
-width, height = nx - x - x2, ny - y - y2  # Width and height of the crop
-x, y, width, height = round.(Int, [x, y, width, height])
-
-filetype = ".mp4"
-cropped_frame = ImageTransformations.imresize(frame[y:y+height, x:x+width], (height, width))
-fullpath_cropped = joinpath(dirname(fullpath), "cropped", basename(folder_path)*"_cropped"*filetype)
-writer = VideoIO.open_video_out(fullpath_cropped, cropped_frame; framerate=framerate);
-p = Progress(length(video);desc="Cropping video...");
-for frame in video
-    cropped_frame = ImageTransformations.imresize(frame[y:y+height, x:x+width], (height, width))
-    VideoIO.write(writer, cropped_frame)
-    next!(p)
-end
-VideoIO.close_video_out!(writer);
+# Plot facies
+fig = plot_cell_data(model[:Reservoir].data_domain.representation,
+ G_cells_tag, transparency = false, alpha = 1, 
+ colormap = :viridis, z_is_depth=true,
+ colorbar = nothing)
+ax = fig[2]
+hidespines!(ax)
+hidedecorations!(ax)
+ax.azimuth = pi/2
+ax.elevation = 0
