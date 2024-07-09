@@ -19,7 +19,6 @@ folder_path = output_folder*"B_deck=B_ISO_C_grid=horz_ndg_cut_PG_130x62"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=cart_ndg_cut_PG_819x117"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=gq_pb0.19"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=5tetRef0.31"
-folder_path = output_folder*"B_deck=B_ISO_C_grid=horz_ndg_cut_PG_819x117_schedule=animationFriendly"
 
 # C
 # folder_path = output_folde r*"C_deck=B_ISO_C_grid=struct50x50x50"
@@ -30,20 +29,29 @@ folder_path = output_folder*"B_deck=B_ISO_C_grid=horz_ndg_cut_PG_819x117_schedul
 # folder_path = output_folder*"C_deck=B_ISO_C_grid=cart_ndg_cut_PG_100x100x100"
 
 method = "hybrid-avgmpfa"
-folder_path_2 = split(folder_path, "schedule")[1]*"pdisc="*method*"_schedule=animationFriendly"
-# folder_path_2 = folder_path*"_pdisc="*method
 
-animation_name = "B_HNCP-F_diff_long_schedule"
-framerate = 24
-pixels_per_unit = 2
-compression = 1
+folder_path_2 = folder_path*"_pdisc="*method
 
-result = animate_diff(folder_path, folder_path_2,
-                    animation_name = animation_name)
+name = "B_HNCP-F"
 
 
+SPEcase = basename(folder_path)[1]
+output_path = folder_path*"_output"
+## Mock Simulation
+case = setup_case_from_mrst(folder_path*".mat");
+model = case[1].model;
+reservoir_states = read_big_output(output_path) #for large simulations
 
-#old
+#for sims run in jutul
+# reservoir_states, _ = read_results(output_path, read_reports=false); 
+# for i in eachindex(reservoir_states)
+#     reservoir_states[i] = reservoir_states[i][:Reservoir]
+# end
+
+#for sims in mrst
+states1, states2, difference = read_states_and_calc_diff(path1, path2)
+
+chosen_states = states1
 fig = plot_reservoir(model[:Reservoir], chosen_states; 
                     shading= NoShading, 
                     edge_color = edge_color)
