@@ -5,7 +5,8 @@ function animate_diff(path1, path2;
     framerate=24,
     pixels_per_unit = 2,
     compression = 1,
-    include_days = false)
+    include_days = false,
+    title = "Time since injection start")
 
     SPEcase = basename(path1)[1]
     ## Read case setup
@@ -13,7 +14,7 @@ function animate_diff(path1, path2;
     model = case[1].model;
 
     states1, states2, difference = read_states_and_calc_diff(path1, path2)
-     #get max rages, to not change colorscale
+    #get max ranges, to not change colorscale during animation
     range_regular, max_diff = ranges(states1, difference, states2)
     
     
@@ -36,7 +37,7 @@ function animate_diff(path1, path2;
                     tellheight = false, tellwidth = false,
                     xticksvisible = false, xticklabelsvisible=false, alignmode=Outside())
     #Labels in lower left
-    lab_time_title = Label(fig[2, 1][1, 1], "Time since injection start", fontsize=30,
+    lab_time_title = Label(fig[2, 1][1, 1], title, fontsize=30,
                     width=Relative(0.8), height=Relative(0.4),
                     halign=:center, valign=:center, # Changed from :top to :center
                     tellheight=false, tellwidth=false)

@@ -25,7 +25,7 @@ elseif ~isempty(opt.cellError)
         highErrorCells = opt.cellError > tol;
     end
 
-    cellBlocks{2} = find(highErrorCells);histo
+    cellBlocks{2} = find(highErrorCells);
     cellBlocks{1}= setdiff(1:G.cells.num, cellBlocks{2});
 
     faceBlocks = faceBlocksFromCellBlocks(G, cellBlocks);
