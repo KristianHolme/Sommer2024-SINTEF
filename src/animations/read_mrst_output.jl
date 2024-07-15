@@ -6,7 +6,7 @@ function readMRSTOutput(directory; field="rs")
     files = sort(files, by = x -> parse(Int, match(r"state(\d+)\.mat", basename(x)).captures[1]))
     state = Vector{Any}()
     
-    for file in files
+    @showprogress for file in files
         matfile = matopen(file)
         data = read(matfile, "data")
         if haskey(data, field)

@@ -13,16 +13,18 @@ clear all
 mrstModule add ad-core mpfa ad-blackoil compositional ad-props mrst-gui nfvm sommer2024
 
 
-gridname = 'skewtwist';
+gridname = 'skewtwist-M';
 
-aspect_ratio = 4000; %standard is 4
-scaling = 2;
+aspect_ratio = 4; %standard is 4
+scaling = 1;
 shift = 0;
+grav = true;
+
 G = getGrid(gridname, 'aspect_ratio', aspect_ratio, 'scaling', scaling, 'shift', shift);
 
 casename = [gridname, sprintf(', AR=%d, scaling=%.2f, shift=%d', aspect_ratio, scaling, shift)];
 
-grav = false;
+
 
 if grav
     gravity reset on;
@@ -129,6 +131,7 @@ end
 %% Plot all states together
 methods = {'TPFA', 'NTPFA', 'avgMPFA', 'MPFA'};
 reports = {reportTPFA, reportNTPFA, reportAvgMPFA,reportMPFA };
+
 plotContour = ~contains(gridname, 'simplices') && ~contains(gridname, 'tri');
 saturations = {statesTPFA{end}.s(:,1), statesNTPFA{end}.s(:,1), statesAvgMPFA{end}.s(:,1), statesMPFA{end}.s(:,1)};
 plotAll(G, saturations, methods, 'End saturation', casename);
@@ -141,11 +144,12 @@ plotAll(G, pressures, methods, 'Start pressure', casename, 'plotContour', plotCo
 
 pressures = {statesTPFA{end}.pressure, statesNTPFA{end}.pressure, statesAvgMPFA{end}.pressure, statesMPFA{end}.pressure};
 plotAll(G, pressures, methods, 'End pressure', casename, 'plotContour', plotContour);
-return
+
 %% Plot performance
-methods = {'TPFA', 'NTPFA', 'avgMPFA', 'MPFA'};
+methods = {'TPFA', 'NTPFA', 'avgMPFA', 'MPFA'}; 
 reports = {reportTPFA, reportNTPFA, reportAvgMPFA,reportMPFA };
 reportStats(reports, methods, 'batchname', casename, 'savefolder', '~/Code/Sommer2024-SINTEF/plots/threeWellTest/performance')
+return
 %% Plot Individuals toolbars
 plotContour = true;
 plotFinalPressure(G, statesTPFA, 'TPFA', 'plotContour', plotContour);

@@ -6,8 +6,8 @@ include("animate_and_crop.jl")
 include("read_big_output.jl")
 include("utils.jl")
 
-output_folder = "/media/kristian/HDD/matlab/output/"
-# output_folder = "/home/kristian/matlab/output/"
+# output_folder = "/media/kristian/HDD/matlab/output/"
+output_folder = "/home/kristian/matlab/output/"
 
 # folder_path = output_folder*"A_deck=RS_grid=5tetRef10_pdisc=ntpfa"
 
@@ -15,7 +15,7 @@ output_folder = "/media/kristian/HDD/matlab/output/"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=struct819x117"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=cPEBI_819x117"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=horz_ndg_cut_PG_819x117"
-folder_path = output_folder*"B_deck=B_ISO_C_grid=horz_ndg_cut_PG_130x62"
+# folder_path = output_folder*"B_deck=B_ISO_C_grid=horz_ndg_cut_PG_130x62"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=cart_ndg_cut_PG_819x117"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=gq_pb0.19"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=5tetRef0.31"
@@ -27,12 +27,11 @@ folder_path = output_folder*"B_deck=B_ISO_C_grid=horz_ndg_cut_PG_130x62"
 # folder_path = output_folder*"C_deck=B_ISO_C_grid=struct100x100x100"
 # folder_path = output_folder*"C_deck=B_ISO_C_grid=horz_ndg_cut_PG_100x100x100"
 # folder_path = output_folder*"C_deck=B_ISO_C_grid=cart_ndg_cut_PG_100x100x100"
+folder_path = output_folder*"C_deck=B_ISO_C_grid=flat_tetra_subwell"
 
 method = "hybrid-avgmpfa"
 
-folder_path_2 = folder_path*"_pdisc="*method
-
-name = "B_HNCP-F"
+name = "C_flat_tetra_subwell"
 
 
 SPEcase = basename(folder_path)[1]
@@ -40,7 +39,16 @@ output_path = folder_path*"_output"
 ## Mock Simulation
 case = setup_case_from_mrst(folder_path*".mat");
 model = case[1].model;
-reservoir_states = read_big_output(output_path) #for large simulations
+num_cells = model[:Reservoir].data_domain.representation.nc
+reservoir_states = readMRSTOutput(folder_path*"/multiphase")
+num_states = length(reservoir_states)
+states1 = Vector{Dict{Symbol, Any}}(undef, num_states)
+for i in eachindex(reservoir_states)
+    states1[i] = Dict(:Rs=> Vector{Float64}(undef, num_cells))
+
+    states1[i][:Rs] =  vec(reservoir_states[i])
+end
+# reservoir_states = read_big_output(output_path) #for large simulations
 
 #for sims run in jutul
 # reservoir_states, _ = read_results(output_path, read_reports=false); 
@@ -49,12 +57,11 @@ reservoir_states = read_big_output(output_path) #for large simulations
 # end
 
 #for sims in mrst
-states1, states2, difference = read_states_and_calc_diff(path1, path2)
 
 chosen_states = states1
 fig = plot_reservoir(model[:Reservoir], chosen_states; 
-                    shading= NoShading, 
-                    edge_color = edge_color)
+                    shading= NoShading, edge_color=:grey)
+plot_facies = true
 if plot_facies
     matdata = MAT.matread(folder_path*".mat")
     G_cells_tag = matdata["G"]["cells"]["tag"]
@@ -79,7 +86,7 @@ elseif SPEcase == 'C'
     fig.content[1].i_selected = 3 # set variable to rs
 end
 
-anim_path = animate(fig;animation_name=name, num_steps = 300)
+anim_path = animate(fig;animation_name=name, num_steps = 301)
 crop_video(anim_path; SPEcase = SPEcase, num_steps=300)
 
 # Plot facies separately
