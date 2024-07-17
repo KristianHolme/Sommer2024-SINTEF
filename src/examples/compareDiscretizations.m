@@ -12,8 +12,8 @@ clear all
 
 mrstModule add ad-core mpfa ad-blackoil compositional ad-props mrst-gui nfvm sommer2024
 
-
-gridname = 'skewtwist-M';
+%skewtwist
+gridname = 'gmshTri';
 
 aspect_ratio = 4; %standard is 4
 scaling = 1;
@@ -63,7 +63,7 @@ W = addWell(W, G, rock, c1, 'comp_i', [1, 0], 'type', 'rate', 'val', pv/year, 'r
 W = addWell(W, G, rock, c2, 'comp_i', [1, 0], 'type', 'bhp', 'val', 50*barsa, 'radius', r);
 W = addWell(W, G, rock, c3, 'comp_i', [1, 0], 'type', 'bhp', 'val', 50*barsa, 'radius', r);
 
-plotW(G, W);
+% plotW(G, W);
 %% We can simulate with either immiscible or compositional fluid physics
 % The example uses the general simulator framework and as such we can
 % easily simulate the same problem with different underlying physics.
@@ -130,7 +130,6 @@ catch msg
 end
 %% Plot all states together
 methods = {'TPFA', 'NTPFA', 'avgMPFA', 'MPFA'};
-reports = {reportTPFA, reportNTPFA, reportAvgMPFA,reportMPFA };
 
 plotContour = ~contains(gridname, 'simplices') && ~contains(gridname, 'tri');
 saturations = {statesTPFA{end}.s(:,1), statesNTPFA{end}.s(:,1), statesAvgMPFA{end}.s(:,1), statesMPFA{end}.s(:,1)};
@@ -147,11 +146,13 @@ plotAll(G, pressures, methods, 'End pressure', casename, 'plotContour', plotCont
 
 %% Plot performance
 methods = {'TPFA', 'NTPFA', 'avgMPFA', 'MPFA'}; 
-reports = {reportTPFA, reportNTPFA, reportAvgMPFA,reportMPFA };
+reports = {reportTPFA, reportNTPFA, reportAvgMPFA, reportMPFA };
+% methods = {'TPFA', 'NTPFA', 'avgMPFA'}; 
+% reports = {reportTPFA, reportNTPFA, reportAvgMPFA};
 reportStats(reports, methods, 'batchname', casename, 'savefolder', '~/Code/Sommer2024-SINTEF/plots/threeWellTest/performance')
 return
 %% Plot Individuals toolbars
-plotContour = true;
+plotContour = false;
 plotFinalPressure(G, statesTPFA, 'TPFA', 'plotContour', plotContour);
 plotFinalPressure(G, statesNTPFA, 'NTPFA', 'plotContour', plotContour);
 plotFinalPressure(G, statesAvgMPFA, 'AvgMPFA', 'plotContour', plotContour);
