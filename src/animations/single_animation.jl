@@ -6,8 +6,8 @@ include("animate_and_crop.jl")
 include("read_big_output.jl")
 include("utils.jl")
 
-# output_folder = "/media/kristian/HDD/matlab/output/"
-output_folder = "/home/kristian/matlab/output/"
+output_folder = "/media/kristian/HDD/matlab/output/"
+# output_folder = "/home/kristian/matlab/output/"
 
 # folder_path = output_folder*"A_deck=RS_grid=5tetRef10_pdisc=ntpfa"
 
@@ -27,11 +27,12 @@ output_folder = "/home/kristian/matlab/output/"
 # folder_path = output_folder*"C_deck=B_ISO_C_grid=struct100x100x100"
 # folder_path = output_folder*"C_deck=B_ISO_C_grid=horz_ndg_cut_PG_100x100x100"
 # folder_path = output_folder*"C_deck=B_ISO_C_grid=cart_ndg_cut_PG_100x100x100"
-folder_path = output_folder*"C_deck=B_ISO_C_grid=flat_tetra_subwell"
+# folder_path = output_folder*"C_deck=B_ISO_C_grid=flat_tetra_subwell"
+folder_path = output_folder*"C_deck=B_ISO_C_grid=tet_zx10-F_schedule=skipEquil"
 
-method = "hybrid-avgmpfa"
+# method = "hybrid-avgmpfa"
 
-name = "C_flat_tetra_subwell"
+name = "C_tet_zx10-F"
 
 
 SPEcase = basename(folder_path)[1]
@@ -40,7 +41,7 @@ output_path = folder_path*"_output"
 case = setup_case_from_mrst(folder_path*".mat");
 model = case[1].model;
 num_cells = model[:Reservoir].data_domain.representation.nc
-reservoir_states = readMRSTOutput(folder_path*"/multiphase")
+# reservoir_states = readMRSTOutput(folder_path*"/multiphase")
 num_states = length(reservoir_states)
 states1 = Vector{Dict{Symbol, Any}}(undef, num_states)
 for i in eachindex(reservoir_states)
@@ -50,18 +51,18 @@ for i in eachindex(reservoir_states)
 end
 # reservoir_states = read_big_output(output_path) #for large simulations
 
-#for sims run in jutul
-# reservoir_states, _ = read_results(output_path, read_reports=false); 
-# for i in eachindex(reservoir_states)
-#     reservoir_states[i] = reservoir_states[i][:Reservoir]
-# end
-
+# for sims run in jutul
+reservoir_states, _ = read_results(output_path, read_reports=false); 
+for i in eachindex(reservoir_states)
+    reservoir_states[i] = reservoir_states[i][:Reservoir]
+end
+num_states = length(reservoir_states)
 #for sims in mrst
 
-chosen_states = states1
+chosen_states = reservoir_states
 fig = plot_reservoir(model[:Reservoir], chosen_states; 
                     shading= NoShading, edge_color=:grey)
-plot_facies = true
+plot_facies = false
 if plot_facies
     matdata = MAT.matread(folder_path*".mat")
     G_cells_tag = matdata["G"]["cells"]["tag"]
@@ -86,16 +87,6 @@ elseif SPEcase == 'C'
     fig.content[1].i_selected = 3 # set variable to rs
 end
 
-anim_path = animate(fig;animation_name=name, num_steps = 301)
-crop_video(anim_path; SPEcase = SPEcase, num_steps=300)
+anim_path = animate(fig;animation_name=name, num_steps = num_states)
+crop_video(anim_path; SPEcase = SPEcase, num_steps=num_states)
 
-# Plot facies separately
-fig = plot_cell_data(model[:Reservoir].data_domain.representation,
- G_cells_tag, transparency = false, alpha = 1, 
- colormap = :viridis, z_is_depth=true,
- colorbar = nothing)
-ax = fig[2]
-hidespines!(ax)
-hidedecorations!(ax)
-ax.azimuth = -pi/2
-ax.elevation = 0
