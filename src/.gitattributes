@@ -1,0 +1,14 @@
+*.mat filter=lfs diff=lfs merge=lfs -text
+gmshGrids/gmshCuboid_SPE.mat filter=lfs diff=lfs merge=lfs -text
+gmshGrids/gmshRectangle2.mat filter=lfs diff=lfs merge=lfs -text
+gmshGrids/gmshrectangle.mat filter=lfs diff=lfs merge=lfs -text
+gmshGrids/rectangle.geo filter=lfs diff=lfs merge=lfs -text
+gmshGrids/cuboid.geo filter=lfs diff=lfs merge=lfs -text
+gmshGrids/gmshCuboid.mat filter=lfs diff=lfs merge=lfs -text
+gmshGrids/SPE11C filter=lfs diff=lfs merge=lfs -text
+gmshGrids/SPETest.m filter=lfs diff=lfs merge=lfs -text
+gmshGrids/gmshCuboid-M.m filter=lfs diff=lfs merge=lfs -text
+gmshGrids/gmshRectangle2.m filter=lfs diff=lfs merge=lfs -text
+gmshGrids/rectangle.msh filter=lfs diff=lfs merge=lfs -text
+gmshGrids/rectangletest.geo filter=lfs diff=lfs merge=lfs -text
+gmshGrids/gmshCuboid.m filter=lfs diff=lfs merge=lfs -text
