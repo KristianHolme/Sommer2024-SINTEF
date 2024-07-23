@@ -4,7 +4,8 @@ function [faceBlocks, cellBlocks] = getFaceBlocksFromIndicator(G, varargin)
 opt = struct('faceError', [], ...
     'cellError', [], ...
     'rock', [], ...
-    'percentConsistent', 0);
+    'percentConsistent', 0, ...
+    'layers', 0);
 opt = merge_options(opt, varargin{:});
 
 cellBlocks = cell(1,2);
@@ -26,6 +27,10 @@ elseif ~isempty(opt.cellError)
     end
 
     cellBlocks{2} = find(highErrorCells);
+    %for multiple layers
+    if opt.layers ~= 0
+        cellBlocks{2} = findCellNeighbors(G, cellBlocks{2}, opt.layers);
+    end
     cellBlocks{1}= setdiff(1:G.cells.num, cellBlocks{2});
 
     faceBlocks = faceBlocksFromCellBlocks(G, cellBlocks);
