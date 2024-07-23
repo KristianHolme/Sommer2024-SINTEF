@@ -9,13 +9,16 @@ if contains(gridname, 'skew') || contains(gridname, 'twist') || contains(gridnam
     if contains(gridname, 'simplices')
         G = triangleGrid(G.nodes.coords);
     end
-elseif contains(gridname, 'tri') || contains(gridname, 'pebi')
+elseif contains(gridname, 'rand') 
    G = triGrid(gridname, opt);
 elseif contains(gridname, 'gmshTri')
     if contains(gridname, '-M')
         G = load("src/gmshGrids/gmshRectangle2.mat").G;
     else
         G = load("src/gmshGrids/gmshrectangle.mat").G;
+    end
+    if contains(gridname, 'pebi')
+        G = pebi(G);
     end
 end
 G.nodes.coords(:, 1) = G.nodes.coords(:, 1) * opt.scaling + opt.shift;
