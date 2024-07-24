@@ -2,3 +2,6 @@
 plots/*
 *.mp4
 videos/*
+data/*
+
+!data/gmshGrids/SPE11C/tet_zx10_F.m
