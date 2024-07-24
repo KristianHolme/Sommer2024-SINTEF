@@ -120,7 +120,7 @@ function animate_diff(path1, path2;
 end
 
 
-function animate(fig; animation_name="anim", folder = "videos",
+function animate(fig; animation_name="anim", folder = "./../../videos",
     num_steps=301,
     framerate=24,
     pixels_per_unit = 2,
