@@ -1,10 +1,11 @@
 using JutulDarcy, Jutul, GLMakie
 using ProgressMeter
 using VideoIO, ImageTransformations
-include("read_mrst_output.jl")
-include("animate_and_crop.jl")
-include("read_big_output.jl")
-include("utils.jl")
+include("./../src/animations/read_mrst_output.jl")
+include("./../src/animations/animate_and_crop.jl")
+include("./../src/animations/read_big_output.jl")
+include("./../src/animations/utils.jl")
+
 
 output_folder = "/media/kristian/HDD/matlab/output/"
 # output_folder = "/home/kristian/matlab/output/"
@@ -41,7 +42,7 @@ output_path = folder_path*"_output"
 case = setup_case_from_mrst(folder_path*".mat");
 model = case[1].model;
 num_cells = model[:Reservoir].data_domain.representation.nc
-# reservoir_states = readMRSTOutput(folder_path*"/multiphase")
+reservoir_states = readMRSTOutput(folder_path*"/multiphase")
 num_states = length(reservoir_states)
 states1 = Vector{Dict{Symbol, Any}}(undef, num_states)
 for i in eachindex(reservoir_states)
@@ -49,7 +50,7 @@ for i in eachindex(reservoir_states)
 
     states1[i][:Rs] =  vec(reservoir_states[i])
 end
-# reservoir_states = read_big_output(output_path) #for large simulations
+reservoir_states = read_big_output(output_path) #for large simulations
 
 # for sims run in jutul
 reservoir_states, _ = read_results(output_path, read_reports=false); 
@@ -59,7 +60,7 @@ end
 num_states = length(reservoir_states)
 #for sims in mrst
 
-chosen_states = reservoir_states
+chosen_states = states1
 fig = plot_reservoir(model[:Reservoir], chosen_states; 
                     shading= NoShading, edge_color=:grey)
 plot_facies = false
