@@ -121,12 +121,12 @@ end
 
 
 function animate(fig; animation_name="anim", folder = "videos",
-    num_steps=301,
     framerate=24,
     pixels_per_unit = 2,
     compression = 1)
     fullpath = joinpath(pwd(), folder, animation_name*".mp4")
 
+    num_steps = length(fig.content[3].range.val)
     p = Progress(num_steps, desc="Recording animation...");
     record(fig.content[5].scene, fullpath, 1:num_steps; framerate = framerate, px_per_unit=pixels_per_unit, compression = compression) do i
         fig.content[3].selected_index = i
@@ -136,10 +136,11 @@ function animate(fig; animation_name="anim", folder = "videos",
 end
 
 ## Crop animation
-function crop_video(path;num_steps=301,
+function crop_video(path;
     framerate = 24,
     SPEcase = 'B')
     video = VideoIO.load(path);
+    num_steps = length(video)
     frame = video[num_steps]
     # Define cropping parameters
     ny, nx = size(frame)

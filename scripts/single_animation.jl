@@ -1,16 +1,16 @@
 using JutulDarcy, Jutul, GLMakie
 using ProgressMeter
 using VideoIO, ImageTransformations
-include("./../src/animations/read_mrst_output.jl")
-include("./../src/animations/animate_and_crop.jl")
-include("./../src/animations/read_big_output.jl")
-include("./../src/animations/utils.jl")
+using Revise
+includet("./../src/animations/preparation.jl")
+includet("./../src/animations/animate_and_crop.jl")
+includet("./../src/animations/utils.jl")
 
 
-output_folder = "/media/kristian/HDD/matlab/output/"
-# output_folder = "/home/kristian/matlab/output/"
+# output_folder = "/media/kristian/HDD/matlab/output/"
+output_folder = "/home/kristian/matlab/output/"
 
-# folder_path = output_folder*"A_deck=RS_grid=5tetRef10_pdisc=ntpfa"
+# folder_path = output_folder*"A_deck=RS_grid=5tetRef10_pdisc=ntpfa";name = "A_5tetRef10_ntpfa"
 
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=cPEBI_2640x380"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=struct819x117"
@@ -22,47 +22,19 @@ output_folder = "/media/kristian/HDD/matlab/output/"
 # folder_path = output_folder*"B_deck=B_ISO_C_grid=5tetRef0.31"
 
 # C
-# folder_path = output_folde r*"C_deck=B_ISO_C_grid=struct50x50x50"
-# folder_path = output_folder*"C_deck=B_ISO_C_grid=horz_ndg_cut_PG_50x50x50"
-# folder_path = output_folder*"C_deck=B_ISO_C_grid=cart_ndg_cut_PG_50x50x50"
-# folder_path = output_folder*"C_deck=B_ISO_C_grid=struct100x100x100"
-# folder_path = output_folder*"C_deck=B_ISO_C_grid=horz_ndg_cut_PG_100x100x100"
-# folder_path = output_folder*"C_deck=B_ISO_C_grid=cart_ndg_cut_PG_100x100x100"
-# folder_path = output_folder*"C_deck=B_ISO_C_grid=flat_tetra_subwell"
-folder_path = output_folder*"C_deck=B_ISO_C_grid=tet_zx10-F_schedule=skipEquil"
-
+# folder_path = output_folder*"C_deck=B_ISO_C_grid=flat_tetra_subwell";name = "flat_tetra_subwell"
+folder_path = output_folder*"C_deck=B_ISO_C_grid=tet_zx10-F3_schedule=skipEquil";name = "C_tet_zx10-F3"
+SPEcase = basename(folder_path)[1]
 # method = "hybrid-avgmpfa"
 
-name = "C_tet_zx10-F"
+#
+# read_fun = read_MRST_output 
+# read_fun = read_jutul_and_convert
+read_fun = read_big_jutul_output
+model, reservoir_states = read_setup_and_load_states(folder_path, read_fun=read_fun);
 
-
-SPEcase = basename(folder_path)[1]
-output_path = folder_path*"_output"
-## Mock Simulation
-case = setup_case_from_mrst(folder_path*".mat");
-model = case[1].model;
-num_cells = model[:Reservoir].data_domain.representation.nc
-reservoir_states = readMRSTOutput(folder_path*"/multiphase")
-num_states = length(reservoir_states)
-states1 = Vector{Dict{Symbol, Any}}(undef, num_states)
-for i in eachindex(reservoir_states)
-    states1[i] = Dict(:Rs=> Vector{Float64}(undef, num_cells))
-
-    states1[i][:Rs] =  vec(reservoir_states[i])
-end
-reservoir_states = read_big_output(output_path) #for large simulations
-
-# for sims run in jutul
-reservoir_states, _ = read_results(output_path, read_reports=false); 
-for i in eachindex(reservoir_states)
-    reservoir_states[i] = reservoir_states[i][:Reservoir]
-end
-num_states = length(reservoir_states)
-#for sims in mrst
-
-chosen_states = states1
-fig = plot_reservoir(model[:Reservoir], chosen_states; 
-                    shading= NoShading, edge_color=:grey)
+fig = plot_reservoir(model[:Reservoir], reservoir_states; 
+                     shading= NoShading, edge_color=:grey)
 plot_facies = false
 if plot_facies
     matdata = MAT.matread(folder_path*".mat")
@@ -81,13 +53,13 @@ if SPEcase == 'B' || SPEcase == 'A'
         fig.content[16].i_selected = 2 #set balance colortheme
     end
 elseif SPEcase == 'C'
-    fig.content[18].i_selected = 2 #set scale to all steps, row
+    # fig.content[18].i_selected = 2 #set scale to all steps, row
     fig.current_axis.x.azimuth.val = -2.21
     fig.current_axis.x.elevation.val = 0.1
-    fig.content[4].selected_indices = (70, 1000) #dont show low values
-    fig.content[1].i_selected = 3 # set variable to rs
+    # fig.content[4].selected_indices = (70, 1000) #dont show low values
+    # fig.content[1].i_selected = 3 # set variable to rs
 end
 
-anim_path = animate(fig;animation_name=name, num_steps = num_states)
-crop_video(anim_path; SPEcase = SPEcase, num_steps=num_states)
+anim_path = animate(fig;animation_name=name)
+crop_video(anim_path; SPEcase = SPEcase)
 
