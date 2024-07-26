@@ -6,7 +6,8 @@ function reportStats(reports, names, varargin)
         'title', '', ...
         'savefolder', '', ...
         'batchname', '', ...
-        'xscaling', []);
+        'xscaling', [], ...
+        'alignTimes', false);
     %TODO: add cutting stats
     
     opt = merge_options(opt, varargin{:});
@@ -24,6 +25,9 @@ function reportStats(reports, names, varargin)
     %Formatting
     if isa(reports{1}, 'ResultHandler')
         reports = reduceFromHandlers(reports);
+    end
+    if opt.alignTimes %make all times start at zero
+        reports = alignTime(reports);
     end
     
     if isempty(opt.xscaling)
@@ -91,11 +95,11 @@ function reportStats(reports, names, varargin)
 end
 
 function reports = reduceFromHandlers(reports)
-    num_report_steps = numelData(reports{1});
     num_reports = numel(reports);
     new_reports = cell(num_reports, 1);
     for ireport = 1:num_reports
         report = reports{ireport};
+        num_report_steps = numelData(report);
         new_reports{ireport} = struct();
         new_reports{ireport}.ReservoirTime = nan(num_report_steps, 1);
         new_reports{ireport}.Converged = nan(num_report_steps, 1);
@@ -106,7 +110,6 @@ function reports = reduceFromHandlers(reports)
             report_step = report{istep};
             new_reports{ireport}.ControlstepReports{istep} = report_step;
             stepreports = report_step.StepReports;
-           
 
             new_reports{ireport}.ReservoirTime(istep) = stepreports{end}.LocalTime;
             new_reports{ireport}.Converged(istep)  = report_step.Converged;
@@ -184,4 +187,15 @@ function [xscaling, unit] = determineXScaling(reports)
         xscaling = 1;
         unit = 's';
     end
+end
+
+function reports = alignTime(reports)
+    num_reports = numel(reports);
+    for ir = 1:num_reports
+        firstTime = reports{ir}.ReservoirTime(1);
+        if firstTime > 500*speyear
+            reports{ir}.ReservoirTime = reports{ir}.ReservoirTime  - firstTime;
+        end
+    end
+
 end
